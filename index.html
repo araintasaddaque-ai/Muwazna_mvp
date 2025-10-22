@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muwazana: Localized Math Solver MVP</title>
+    <style>
+        :root {
+            --color-primary: #007bff;
+            --color-bg: #f8f9fa;
+            --color-card: #ffffff;
+            --color-text: #343a40;
+            --color-math-bg: #f0f8ff; /* Light blue for solution area */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .solver-container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--color-card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #problem-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1.1em;
+        }
+        #solve-btn {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        #solve-btn:hover {
+            background-color: #0056b3;
+        }
+        #solution-output {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid var(--color-primary);
+            background-color: var(--color-math-bg);
+            border-radius: 8px;
+            min-height: 100px;
+            text-align: left;
+            display: none;
+        }
+        .step {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 3px solid var(--color-primary);
+            background: rgba(0, 123, 255, 0.05);
+        }
+        .step strong {
+            color: var(--color-primary);
+            display: block;
+            margin-bottom: 5px;
+        }
+        .ar-text {
+            /* Basic Arabic styling for demonstration */
+            font-family: 'Tahoma', 'Arial', sans-serif; 
+            direction: rtl;
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="solver-container">
+        <h1>Muwazana: Math Solver (Curriculum Aligned)</h1>
+        <p>Enter your algebra problem below (e.g., 2x + 5 = 15)</p>
+        
+        <input type="text" id="problem-input" placeholder="Type your math problem here...">
+        
+        <button id="solve-btn" onclick="solveProblem()">Solve Step-by-Step</button>
+
+        <div id="solution-output">
+            <h2>Step-by-Step Solution</h2>
+            <div id="steps-content">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure simulating a response from an open-source math engine (SymPy)
+        // Note: The solution must be pre-defined for this non-API MVP.
+
+        const PROBLEM_SOLUTION = {
+            problem: "Solve for x: 2x + 5 = 15",
+            finalAnswer: "x = 5",
+            steps: [
+                {
+                    en: "1. Isolate the variable term by subtracting 5 from both sides of the equation.",
+                    ar: "١. اعزل الحد المتغير بطرح ٥ من طرفي المعادلة.",
+                    formula: "2x + 5 - 5 = 15 - 5"
+                },
+                {
+                    en: "2. Simplify the equation.",
+                    ar: "٢. تبسيط المعادلة.",
+                    formula: "2x = 10"
+                },
+                {
+                    en: "3. Solve for x by dividing both sides by 2.",
+                    ar: "٣. أوجد قيمة س بقسمة طرفي المعادلة على ٢.",
+                    formula: "x = 10 / 2"
+                },
+                {
+                    en: "4. Final Answer.",
+                    ar: "٤. الإجابة النهائية.",
+                    formula: "x = 5"
+                }
+            ],
+            curriculum_tag: "Grade 11 - Linear Algebra - KSA Curriculum"
+        };
+
+        function solveProblem() {
+            const inputElement = document.getElementById('problem-input');
+            const outputElement = document.getElementById('solution-output');
+            const stepsContainer = document.getElementById('steps-content');
+            const problem = inputElement.value.trim();
+
+            if (problem === "") {
+                alert("Please enter a math problem.");
+                return;
+            }
+
+            // Simulate the SymPy/SageMath calculation delay
+            document.getElementById('solve-btn').textContent = "Solving... Please wait (3s)";
+            outputElement.style.display = 'block';
+            stepsContainer.innerHTML = '<p style="text-align: center;">Processing...</p>';
+
+            setTimeout(() => {
+                // Clear previous steps
+                stepsContainer.innerHTML = '';
+                
+                // Display the problem being solved
+                stepsContainer.innerHTML += `
+                    <p><strong>Problem Solved:</strong> ${PROBLEM_SOLUTION.problem}</p>
+                    <p class="ar-text"><strong>المنهج:</strong> ${PROBLEM_SOLUTION.curriculum_tag}</p>
+                    <hr>
+                `;
+
+                // Inject the step-by-step solution
+                PROBLEM_SOLUTION.steps.forEach(step => {
+                    stepsContainer.innerHTML += `
+                        <div class="step">
+                            <strong>${step.en}</strong>
+                            <p class="ar-text">${step.ar}</p>
+                            <p style="font-family: monospace; font-size: 1.2em; color: #cc0000;">Formula: ${step.formula}</p>
+                        </div>
+                    `;
+                });
+
+                // Display the final answer
+                stepsContainer.innerHTML += `
+                    <h3 style="color: #28a745;">Final Answer: ${PROBLEM_SOLUTION.finalAnswer}</h3>
+                `;
+
+                document.getElementById('solve-btn').textContent = "Solve Step-by-Step";
+                
+            }, 3000); // 3-second delay simulation
+        }
+    </script>
+</body>
+</html>
