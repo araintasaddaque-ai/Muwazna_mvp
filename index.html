@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muwazana: Localized Math Solver MVP</title>
+    <title>Muwazana: Photo Math Solver MVP (FINAL DEBUG)</title>
     <style>
         :root {
             --color-primary: #007bff;
             --color-bg: #f8f9fa;
             --color-card: #ffffff;
             --color-text: #343a40;
-            --color-math-bg: #f0f8ff; /* Light blue for solution area */
+            --color-math-bg: #f0f8ff; 
+            --color-action: #28a745;
+            --color-error: #cc0000;
+            --color-concept: #ff7f00; 
         }
         body {
             font-family: Arial, sans-serif;
@@ -27,11 +30,11 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
         h1 {
             color: var(--color-primary);
-            text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         #problem-input {
             width: 100%;
@@ -43,7 +46,7 @@
             font-size: 1.1em;
         }
         #solve-btn {
-            background-color: var(--color-primary);
+            background-color: var(--color-action);
             color: white;
             padding: 12px 25px;
             border: none;
@@ -54,7 +57,7 @@
             transition: background-color 0.3s;
         }
         #solve-btn:hover {
-            background-color: #0056b3;
+            background-color: #1e7e34;
         }
         #solution-output {
             margin-top: 30px;
@@ -72,115 +75,180 @@
             border-left: 3px solid var(--color-primary);
             background: rgba(0, 123, 255, 0.05);
         }
+        .step-concept {
+            border-left: 3px solid var(--color-concept);
+            background: rgba(255, 127, 0, 0.1);
+        }
         .step strong {
             color: var(--color-primary);
             display: block;
             margin-bottom: 5px;
         }
-        .ar-text {
-            /* Basic Arabic styling for demonstration */
-            font-family: 'Tahoma', 'Arial', sans-serif; 
+        .ur-text {
+            /* Urdu Font for Display */
+            font-family: 'Tahoma', 'Arial', 'Jameel Noori Nastaleeq', sans-serif; 
             direction: rtl;
             text-align: right;
             font-weight: bold;
+        }
+        .urdu-note {
+             /* Ensures proper separation of English and Urdu lines */
+            display: block;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="solver-container">
-        <h1>Muwazana: Math Solver (Curriculum Aligned)</h1>
-        <p>Enter your algebra problem below (e.g., 2x + 5 = 15)</p>
+        <h1>Muwazana: Photo Math Solver</h1>
+        <p>Scan your homework for step-by-step solutions.</p>
         
-        <input type="text" id="problem-input" placeholder="Type your math problem here...">
+        <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
         
-        <button id="solve-btn" onclick="solveProblem()">Solve Step-by-Step</button>
+        <div class="upload-area" onclick="document.getElementById('image-upload').click()">
+            <span id="upload-icon">📸</span>
+            <p id="upload-text">Tap here to select problem image (Simulates Camera Scan)</p>
+            <p id="file-name-display" style="color: var(--color-action);"></p>
+        </div>
+
+        <button id="solve-btn" onclick="solveProblem()">Analyze & Solve (AI Simulation)</button>
 
         <div id="solution-output">
-            <h2>Step-by-Step Solution</h2>
+            <h2 id="solution-header"></h2>
+            <p id="ocr-result-text"></p>
+            <hr>
             <div id="steps-content">
                 </div>
         </div>
     </div>
 
     <script>
-        // Data structure simulating a response from an open-source math engine (SymPy)
-        // Note: The solution must be pre-defined for this non-API MVP.
+        // Diagnostic check: This should always show up in the console.
+        console.log("Muwazana MVP Script Loaded.");
 
-        const PROBLEM_SOLUTION = {
-            problem: "Solve for x: 2x + 5 = 15",
-            finalAnswer: "x = 5",
+        let selectedFile = null;
+
+        // --- SIMULATED SOLUTION DATASETS ---
+
+        const ALGEBRA_SOLUTION = {
+            ocrText: "Solve for x: 3(x - 4) = 9 + x",
+            finalAnswer: "x = 10.5",
+            header: "Algebraic Solution",
             steps: [
-                {
-                    en: "1. Isolate the variable term by subtracting 5 from both sides of the equation.",
-                    ar: "١. اعزل الحد المتغير بطرح ٥ من طرفي المعادلة.",
-                    formula: "2x + 5 - 5 = 15 - 5"
-                },
-                {
-                    en: "2. Simplify the equation.",
-                    ar: "٢. تبسيط المعادلة.",
-                    formula: "2x = 10"
-                },
-                {
-                    en: "3. Solve for x by dividing both sides by 2.",
-                    ar: "٣. أوجد قيمة س بقسمة طرفي المعادلة على ٢.",
-                    formula: "x = 10 / 2"
-                },
-                {
-                    en: "4. Final Answer.",
-                    ar: "٤. الإجابة النهائية.",
-                    formula: "x = 5"
-                }
+                { en: "1. Distribute the constant (3) on the left side.", ur: "١۔ بائیں جانب موجود مستقل (3) کو تقسیم کریں۔", formula: "3x - 12 = 9 + x" },
+                { en: "2. Gather all 'x' terms on the left by subtracting x.", ur: "٢۔ x کی تمام شرائط کو بائیں طرف جمع کریں اور x کو دونوں طرف سے تفریق کریں۔", formula: "2x - 12 = 9" },
+                { en: "3. Isolate the variable term by adding 12 to both sides.", ur: "٣۔ دونوں اطراف میں 12 شامل کرکے متغیر کو الگ کریں۔", formula: "2x = 21" },
+                { en: "4. Final Answer.", ur: "٤۔ حتمی جواب۔", formula: "x = 21 / 2" }
             ],
-            curriculum_tag: "Grade 11 - Linear Algebra - KSA Curriculum"
+            curriculum_tag: "Grade 11 - Linear Algebra - Federal Board, Pakistan"
+        };
+        
+        const ODE_SOLUTION = {
+            ocrText: "Non-Linear ODE: d²y/dx² + ε(1 - y²)dy/dx + y = 0 (Van der Pol Equation)",
+            finalAnswer: "No Analytical Solution. Requires Numerical Methods.",
+            header: "Conceptual Solution Strategy (Advanced Calculus)",
+            steps: [
+                { en: "1. Classification: This is a second-order, non-linear Ordinary Differential Equation (ODE). It models a self-sustaining limit cycle (oscillator).", ur: "١۔ درجہ بندی: یہ دوسرے درجے کی غیر خطی عام تفریقی مساوات ہے۔ یہ خود کو برقرار رکھنے والے دوال کو ماڈل کرتی ہے۔", formula: "" },
+                { en: "2. Weak Non-linearity (ε << 1): Use the Perturbation Method (Averaging) to find the approximate stable oscillation.", ur: "٢۔ کمزور غیر خطی پن (ε << ١): قریب ترین مستحکم دووال کو تلاش کرنے کے لیے 'پرٹربیشن طریقہ' استعمال کریں۔", formula: "y(x) ≈ 2 cos(x)" },
+                { en: "3. Strong Non-linearity (ε >> 1): Use the Method of Matched Asymptotic Expansions.", ur: "٣۔ مضبوط غیر خطی پن (ε >> ١): 'میچڈ ایسیمپٹوٹک توسیع' کا طریقہ استعمال کریں۔", formula: "حل ایک 'ریلیکسیشن دووال' کی شکل اختیار کرتا ہے۔" },
+                { en: "4. Final Method Recommendation:", ur: "٤۔ طریقہ کار کی حتمی سفارش:", formula: "عملی نتائج کے لیے Runge-Kutta عددی حل کا طریقہ استعمال کریں۔" }
+            ],
+            curriculum_tag: "BS Engineering Mathematics - Punjab University"
         };
 
-        function solveProblem() {
-            const inputElement = document.getElementById('problem-input');
-            const outputElement = document.getElementById('solution-output');
-            const stepsContainer = document.getElementById('steps-content');
-            const problem = inputElement.value.trim();
+        // --- UI HANDLERS ---
 
-            if (problem === "") {
-                alert("Please enter a math problem.");
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('file-name-display').textContent = `File selected: ${file.name}`;
+                document.getElementById('upload-text').textContent = 'Image Ready for Analysis. Click the button below.';
+                document.getElementById('upload-icon').textContent = '✅';
+            }
+        }
+
+        // --- CORE SOLVER LOGIC ---
+
+        function solveProblem() {
+            if (!selectedFile && document.getElementById('problem-input').value.trim() === "") {
+                alert("Please select an image or type a problem.");
                 return;
             }
 
-            // Simulate the SymPy/SageMath calculation delay
-            document.getElementById('solve-btn').textContent = "Solving... Please wait (3s)";
+            const inputElement = document.getElementById('problem-input');
+            const outputElement = document.getElementById('solution-output');
+            const stepsContainer = document.getElementById('steps-content');
+            const solutionHeader = document.getElementById('solution-header');
+            const ocrResultText = document.getElementById('ocr-result-text');
+
+            // Logic to determine which problem type to simulate based on input
+            let simulatedSolution = ALGEBRA_SOLUTION;
+            const currentProblem = inputElement.value.toLowerCase();
+            
+            // If the input text contains ODE keywords, simulate the complex solution
+            if (currentProblem.includes('d^2y') || currentProblem.includes('d/dx') || currentProblem.includes('epsilon')) {
+                simulatedSolution = ODE_SOLUTION;
+            } 
+            // If the input is empty but a file is selected, run the algebra simulation
+            // If both file and text exist, the text takes precedence for the simulation.
+
+            // 1. Simulate OCR & AI Processing
+            document.getElementById('solve-btn').textContent = "Analyzing Image & Calculating... (5s)";
             outputElement.style.display = 'block';
-            stepsContainer.innerHTML = '<p style="text-align: center;">Processing...</p>';
+            stepsContainer.innerHTML = '<p style="text-align: center;">Processing OCR and running symbolic engine...</p>';
+            ocrResultText.textContent = '';
 
             setTimeout(() => {
-                // Clear previous steps
-                stepsContainer.innerHTML = '';
+                // 2. Set Headers
+                solutionHeader.textContent = simulatedSolution.header;
                 
-                // Display the problem being solved
-                stepsContainer.innerHTML += `
-                    <p><strong>Problem Solved:</strong> ${PROBLEM_SOLUTION.problem}</p>
-                    <p class="ar-text"><strong>المنهج:</strong> ${PROBLEM_SOLUTION.curriculum_tag}</p>
+                // 3. Display Simulated OCR Result
+                ocrResultText.innerHTML = `
+                    <strong>OCR Result (Analyzed Problem):</strong> 
+                    <span style="color: var(--color-primary);">${simulatedSolution.ocrText}</span>
+                `;
+
+                // 4. Inject Solution Header and Tag
+                stepsContainer.innerHTML = `
+                    <p class="ur-text" style="font-size: 0.9em;"><strong>منہج:</strong> ${simulatedSolution.curriculum_tag}</p>
                     <hr>
                 `;
 
-                // Inject the step-by-step solution
-                PROBLEM_SOLUTION.steps.forEach(step => {
+                // 5. Inject the step-by-step solution
+                simulatedSolution.steps.forEach(step => {
+                    // Use a different style for conceptual steps (like the ODE solution)
+                    const stepClass = simulatedSolution === ODE_SOLUTION ? 'step step-concept' : 'step';
+
                     stepsContainer.innerHTML += `
-                        <div class="step">
+                        <div class="${stepClass}">
                             <strong>${step.en}</strong>
-                            <p class="ar-text">${step.ar}</p>
-                            <p style="font-family: monospace; font-size: 1.2em; color: #cc0000;">Formula: ${step.formula}</p>
+                            <p class="ur-text urdu-note">${step.ur}</p>
+                            <p style="font-family: monospace; font-size: 1.2em; color: var(--color-error);">Formula: ${step.formula}</p>
                         </div>
                     `;
                 });
 
-                // Display the final answer
+                // 6. Display the final answer
                 stepsContainer.innerHTML += `
-                    <h3 style="color: #28a745;">Final Answer: ${PROBLEM_SOLUTION.finalAnswer}</h3>
+                    <h3 style="color: var(--color-action); text-align: left;">Final Answer/Conclusion: ${simulatedSolution.finalAnswer}</h3>
                 `;
 
-                document.getElementById('solve-btn').textContent = "Solve Step-by-Step";
+                document.getElementById('solve-btn').textContent = "Analyze & Solve (AI Simulation)";
                 
-            }, 3000); // 3-second delay simulation
+            }, 5000); // 5-second delay to simulate heavy processing
         }
+        
+        // This is the self-executing function wrapper to ensure the script runs immediately
+        (function() {
+            // Check if console is available for diagnostics
+            if (typeof console !== 'undefined') {
+                console.log("Muwazana script confirmed loaded and functions defined.");
+            }
+            // Initial setup on load
+            document.getElementById('solution-output').style.display = 'none';
+        })(); 
+
     </script>
 </body>
 </html>
