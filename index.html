@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muwazana: Photo Math Solver MVP (FINAL DEBUG)</title>
+    <title>Muwazana: Photo Math Solver MVP (Urdu Ready)</title>
     <style>
         :root {
             --color-primary: #007bff;
@@ -13,7 +13,7 @@
             --color-math-bg: #f0f8ff; 
             --color-action: #28a745;
             --color-error: #cc0000;
-            --color-concept: #ff7f00; 
+            --color-concept: #ff7f00; /* Orange for Conceptual Solutions */
         }
         body {
             font-family: Arial, sans-serif;
@@ -123,9 +123,6 @@
     </div>
 
     <script>
-        // Diagnostic check: This should always show up in the console.
-        console.log("Muwazana MVP Script Loaded.");
-
         let selectedFile = null;
 
         // --- SIMULATED SOLUTION DATASETS ---
@@ -171,27 +168,23 @@
         // --- CORE SOLVER LOGIC ---
 
         function solveProblem() {
-            if (!selectedFile && document.getElementById('problem-input').value.trim() === "") {
-                alert("Please select an image or type a problem.");
-                return;
-            }
-
             const inputElement = document.getElementById('problem-input');
             const outputElement = document.getElementById('solution-output');
             const stepsContainer = document.getElementById('steps-content');
             const solutionHeader = document.getElementById('solution-header');
             const ocrResultText = document.getElementById('ocr-result-text');
 
-            // Logic to determine which problem type to simulate based on input
+            // Determine which problem type to simulate based on input
             let simulatedSolution = ALGEBRA_SOLUTION;
             const currentProblem = inputElement.value.toLowerCase();
             
-            // If the input text contains ODE keywords, simulate the complex solution
+            // Logic to detect the complex ODE
             if (currentProblem.includes('d^2y') || currentProblem.includes('d/dx') || currentProblem.includes('epsilon')) {
                 simulatedSolution = ODE_SOLUTION;
-            } 
-            // If the input is empty but a file is selected, run the algebra simulation
-            // If both file and text exist, the text takes precedence for the simulation.
+            } else if (!selectedFile && currentProblem === "") {
+                alert("Please select an image or type a problem.");
+                return;
+            }
 
             // 1. Simulate OCR & AI Processing
             document.getElementById('solve-btn').textContent = "Analyzing Image & Calculating... (5s)";
@@ -239,15 +232,10 @@
             }, 5000); // 5-second delay to simulate heavy processing
         }
         
-        // This is the self-executing function wrapper to ensure the script runs immediately
-        (function() {
-            // Check if console is available for diagnostics
-            if (typeof console !== 'undefined') {
-                console.log("Muwazana script confirmed loaded and functions defined.");
-            }
-            // Initial setup on load
+        // Initial setup on load
+        window.onload = function() {
             document.getElementById('solution-output').style.display = 'none';
-        })(); 
+        };
 
     </script>
 </body>
